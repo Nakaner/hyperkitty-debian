@@ -1,0 +1,99 @@
+From 8df229194cebd5ef43786376ef6be5aea176ec3c Mon Sep 17 00:00:00 2001
+From: Michael Reichert <osm-ml@michreichert.de>
+Date: Sat, 1 Feb 2020 16:06:07 +0100
+Subject: [PATCH] Add optional links in the footer of every page.
+
+This can be used to link to a contact page or a privacy policy.
+---
+ example_project/settings.py               | 14 +++++++++++++-
+ hyperkitty/templates/hyperkitty/base.html |  4 ++++
+ hyperkitty/tests/settings_test.py         | 15 +++++++++++++++
+ 3 files changed, 32 insertions(+), 1 deletion(-)
+
+diff --git a/example_project/settings.py b/example_project/settings.py
+index 1fd3740..96cb089 100644
+--- a/example_project/settings.py
++++ b/example_project/settings.py
+@@ -110,6 +110,9 @@ TEMPLATES = [
+                 'django_mailman3.context_processors.common',
+                 'hyperkitty.context_processors.common',
+             ],
++            'libraries': {
++                'footer_link': 'django_mailman3.templatetags.footer_link',
++            }
+         },
+     },
+ ]
+@@ -454,7 +457,16 @@ HYPERKITTY_DISABLE_SINGLETON_TASKS = False
+ HYPERKITTY_TASK_LOCK_TIMEOUT = 10 * 60
+ # Disable Gravatar and use generic replacement avatar instead.
+ GRAVATAR_DISABLED = False
+-
++# Additional links to be place in the footer of every page
++FOOTER_LINKS [
++    {
++        'url': '/privacy.html',
++        'text': 'Privacy Policy',
++        'translations': {
++            'de-de': 'Datenschutzerklärung'
++         },
++    }
++]
+ 
+ try:
+     from settings_local import *
+diff --git a/hyperkitty/templates/hyperkitty/base.html b/hyperkitty/templates/hyperkitty/base.html
+index e2ba6ee..20bf4f6 100644
+--- a/hyperkitty/templates/hyperkitty/base.html
++++ b/hyperkitty/templates/hyperkitty/base.html
+@@ -1,6 +1,7 @@
+ {% load i18n %}
+ {% load compress %}
+ {% load static %}
++{% load footer_link %}
+ {% load gravatar_wrapper %}
+ <!DOCTYPE HTML>
+ <html>
+@@ -191,6 +192,9 @@
+       <div class="container">
+         <p class="text-muted">
+             Powered by <a href="http://hyperkitty.readthedocs.org">HyperKitty</a> version {{ HYPERKITTY_VERSION }}.
++            {% for fl in FOOTER_LINKS %}
++            &bull; {% footer_link fl %}
++            {% endfor %}
+         </p>
+       </div>
+     </footer>
+diff --git a/hyperkitty/tests/settings_test.py b/hyperkitty/tests/settings_test.py
+index c418eab..8177f5d 100644
+--- a/hyperkitty/tests/settings_test.py
++++ b/hyperkitty/tests/settings_test.py
+@@ -110,6 +110,9 @@ TEMPLATES = [
+                 'django_mailman3.context_processors.common',
+                 'hyperkitty.context_processors.common',
+             ],
++            'libraries': {
++                'footer_link': 'django_mailman3.templatetags.footer_link',
++            }
+         },
+     },
+ ]
+@@ -389,3 +392,15 @@ if DEBUG is True:
+ #
+ # Only display mailing-lists from the same virtual host as the webserver
+ FILTER_VHOST = False
++# Disable Gravatar and use generic replacement avatar instead.
++GRAVATAR_DISABLED = False
++# Additional links to be place in the footer of every page
++FOOTER_LINKS = [
++    {
++        'url': '/privacy.html',
++        'text': 'Privacy Policy',
++        'translations': {
++            'de-de': 'Datenschutzerklärung'
++         },
++    }
++]
+-- 
+2.7.4
+

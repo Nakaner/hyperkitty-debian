@@ -1,0 +1,243 @@
+From 32b1e3a0b1c940dc4edc7ee846c55b79b6c6b838 Mon Sep 17 00:00:00 2001
+From: Michael Reichert <osm-ml@michreichert.de>
+Date: Tue, 28 Jan 2020 00:11:10 +0100
+Subject: [PATCH] Make it possible to disable Gravatar
+
+Use GRAVATAR_DISABLED = True in the Django settings file.
+---
+ HyperKitty.egg-info/SOURCES.txt                                     | 2 +-
+ example_project/settings.py                                         | 2 ++
+ hyperkitty/templates/hyperkitty/ajax/temp_message.html              | 3 ++-
+ hyperkitty/templates/hyperkitty/base.html                           | 6 +++---
+ hyperkitty/templates/hyperkitty/fragments/overview_top_posters.html | 3 ++-
+ hyperkitty/templates/hyperkitty/messages/message.html               | 3 ++-
+ hyperkitty/templates/hyperkitty/messages/summary_message.html       | 5 +++--
+ hyperkitty/templates/hyperkitty/overview.html                       | 3 ++-
+ hyperkitty/templates/hyperkitty/threads/right_col.html              | 3 ++-
+ hyperkitty/templates/hyperkitty/threads/summary_thread_large.html   | 3 ++-
+ hyperkitty/templates/hyperkitty/user_public_profile.html            | 4 ++--
+ 11 files changed, 23 insertions(+), 14 deletions(-)
+
+diff --git a/HyperKitty.egg-info/SOURCES.txt b/HyperKitty.egg-info/SOURCES.txt
+index 97b175d..3d5bc4c 100644
+--- a/HyperKitty.egg-info/SOURCES.txt
++++ b/HyperKitty.egg-info/SOURCES.txt
+@@ -401,4 +401,4 @@ hyperkitty/views/mlist.py
+ hyperkitty/views/search.py
+ hyperkitty/views/tags.py
+ hyperkitty/views/thread.py
+-hyperkitty/views/users.py
+\ No newline at end of file
++hyperkitty/views/users.py
+diff --git a/example_project/settings.py b/example_project/settings.py
+index 8a1c405..1fd3740 100644
+--- a/example_project/settings.py
++++ b/example_project/settings.py
+@@ -452,6 +452,8 @@ HYPERKITTY_DISABLE_SINGLETON_TASKS = False
+ # with caution.
+ # Default set to 10mins.
+ HYPERKITTY_TASK_LOCK_TIMEOUT = 10 * 60
++# Disable Gravatar and use generic replacement avatar instead.
++GRAVATAR_DISABLED = False
+ 
+ 
+ try:
+diff --git a/hyperkitty/templates/hyperkitty/ajax/temp_message.html b/hyperkitty/templates/hyperkitty/ajax/temp_message.html
+index 22e37b6..6a95235 100644
+--- a/hyperkitty/templates/hyperkitty/ajax/temp_message.html
++++ b/hyperkitty/templates/hyperkitty/ajax/temp_message.html
+@@ -1,5 +1,6 @@
+ {% load i18n %}
+ {% load gravatar %}
++{% load gravatar_wrapper %}
+ {% load hk_generic %}
+ 
+ <div class="temporary"
+@@ -12,7 +13,7 @@
+                 <span class="date">{% trans "Sent just now, not yet distributed" %}</span>
+             </div>
+             <div class="gravatar">
+-                {% gravatar email.sender_address 120 %}
++                {% gravatar_wrapper email.sender_address 120 %}
+             </div>
+             <div class="email-author inline-block">
+                 <span class="name">{{email.sender_name|default:email.sender_address|escapeemail}}</span>
+diff --git a/hyperkitty/templates/hyperkitty/base.html b/hyperkitty/templates/hyperkitty/base.html
+index b2319aa..e2ba6ee 100644
+--- a/hyperkitty/templates/hyperkitty/base.html
++++ b/hyperkitty/templates/hyperkitty/base.html
+@@ -1,7 +1,7 @@
+ {% load i18n %}
+ {% load compress %}
+ {% load static %}
+-{% load gravatar %}
++{% load gravatar_wrapper %}
+ <!DOCTYPE HTML>
+ <html>
+     <head>
+@@ -45,7 +45,7 @@
+                 <div class="nav navbar-nav navbar-right auth dropdown navbar-form hidden-tn hidden-xs hidden-md hidden-lg">
+                     <button type="button" class="btn dropdown-toggle" id="loginDropdownMenu" data-toggle="dropdown">
+                         {% if user.is_authenticated %}
+-                            {% gravatar user.email 20 %}
++                            {% gravatar_wrapper user.email 20 %}
+                         {% else %}
+                             <span class="fa fa-bars"></span>
+                         {% endif %}
+@@ -89,7 +89,7 @@
+                         <li class="dropdown">
+                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                                role="button" aria-haspopup="true" aria-expanded="false">
+-                                {% gravatar user.email 20 %}
++                                {% gravatar_wrapper user.email 20 %}
+                                 {{ user.username|truncatechars:"35" }}
+                                 <span class="caret"></span>
+                             </a>
+diff --git a/hyperkitty/templates/hyperkitty/fragments/overview_top_posters.html b/hyperkitty/templates/hyperkitty/fragments/overview_top_posters.html
+index 20633f2..b1ea8c1 100644
+--- a/hyperkitty/templates/hyperkitty/fragments/overview_top_posters.html
++++ b/hyperkitty/templates/hyperkitty/fragments/overview_top_posters.html
+@@ -1,6 +1,7 @@
+ {% load i18n %}
+ {% load hk_generic %}
+ {% load gravatar %}
++{% load gravatar_wrapper %}
+ 
+ {% for poster in mlist.top_posters %}
+ <div class="maker row">
+@@ -8,7 +9,7 @@
+         #{{forloop.counter}}
+     </div>
+     <div class="inline-block gravatar col-tn-3 col-xs-4 col-md-3">
+-        {% gravatar poster.address 120 %}
++        {% gravatar_wrapper poster.address 120 %}
+         <br />
+     </div>
+     <div class="gravatar-details inline-block col-tn-7 col-xs-6 col-md-7">
+diff --git a/hyperkitty/templates/hyperkitty/messages/message.html b/hyperkitty/templates/hyperkitty/messages/message.html
+index d40c1ec..89355cf 100644
+--- a/hyperkitty/templates/hyperkitty/messages/message.html
++++ b/hyperkitty/templates/hyperkitty/messages/message.html
+@@ -1,5 +1,6 @@
+ {% load i18n %}
+ {% load gravatar %}
++{% load gravatar_wrapper %}
+ {% load hk_generic %}
+ {% load tz %}
+ 
+@@ -9,7 +10,7 @@
+     <div id="{{email.message_id_hash}}" class="email-header">
+         <div class="gravatar-wrapper">
+             <div class="gravatar">
+-                {% gravatar email.sender.address 120 %}
++                {% gravatar_wrapper email.sender.address 120 %}
+             </div>
+             <div class="email-author">
+                 <span class="name">
+diff --git a/hyperkitty/templates/hyperkitty/messages/summary_message.html b/hyperkitty/templates/hyperkitty/messages/summary_message.html
+index ae2fa6f..49eb67a 100644
+--- a/hyperkitty/templates/hyperkitty/messages/summary_message.html
++++ b/hyperkitty/templates/hyperkitty/messages/summary_message.html
+@@ -1,13 +1,14 @@
+ {% load i18n %}
+ {% load gravatar %}
++{% load gravatar_wrapper %}
+ {% load hk_generic %}
+ 
+         <div class="thread">
+             <div class="thread-info">
+                 <div class="thread-email row">
+                     <div class="hidden-tn hidden-xxs hidden-xs col-sm-1 sender gravatar">
+-                        {% if email.sender.address %}
+-                        {% gravatar email.sender.address 120 %}
++                        {% if email.sender.address and gravatar_wrapper_enabled %}
++                        {% gravatar_wrapper email.sender.address 120 %}
+                             <br />
+                         {% else %}
+                                 <div class="gravatar-placeholder">&nbsp;</div>
+diff --git a/hyperkitty/templates/hyperkitty/overview.html b/hyperkitty/templates/hyperkitty/overview.html
+index a8030d5..9dcead8 100644
+--- a/hyperkitty/templates/hyperkitty/overview.html
++++ b/hyperkitty/templates/hyperkitty/overview.html
+@@ -3,6 +3,7 @@
+ {% load i18n %}
+ {% load hk_generic %}
+ {% load gravatar %}
++{% load gravatar_wrapper %}
+ {% load static %}
+ 
+ 
+@@ -170,7 +171,7 @@
+                 </div>
+                 <div class="inline-block gravatar col-tn-3 col-xs-4 col-md-3">
+                     {% if author.email %}
+-                    {% gravatar author.email 120 %}
++                    {% gravatar_wrapper author.email 120 %}
+                     <br />
+                     {% endif %}
+                 </div>
+diff --git a/hyperkitty/templates/hyperkitty/threads/right_col.html b/hyperkitty/templates/hyperkitty/threads/right_col.html
+index f3ed3dc..54332c4 100644
+--- a/hyperkitty/templates/hyperkitty/threads/right_col.html
++++ b/hyperkitty/templates/hyperkitty/threads/right_col.html
+@@ -1,5 +1,6 @@
+ {% load i18n %}
+ {% load gravatar %}
++{% load gravatar_wrapper %}
+ {% load hk_generic %}
+ {% load cache %}
+ 
+@@ -99,7 +100,7 @@
+         <ul class="list-unstyled">
+             {% for participant in thread.participants|sort_by_name %}
+             <li class="row">
+-                <div class="participant-gravatar col-tn-2 col-sm-4 col-md-2">{% gravatar participant.address 48 %}</div>
++                <div class="participant-gravatar col-tn-2 col-sm-4 col-md-2">{% gravatar_wrapper participant.address 48 %}</div>
+                 <div class="participant-name col-tn-8">{{ participant.name|default:participant.address|escapeemail }}</div>
+             </li>
+             {% endfor %}
+diff --git a/hyperkitty/templates/hyperkitty/threads/summary_thread_large.html b/hyperkitty/templates/hyperkitty/threads/summary_thread_large.html
+index bf47693..62232dd 100644
+--- a/hyperkitty/templates/hyperkitty/threads/summary_thread_large.html
++++ b/hyperkitty/templates/hyperkitty/threads/summary_thread_large.html
+@@ -1,5 +1,6 @@
+ {% load i18n %}
+ {% load gravatar %}
++{% load gravatar_wrapper %}
+ {% load hk_generic %}
+ 
+         {% with starting_email=thread.starting_email %}
+@@ -9,7 +10,7 @@
+                 <div class="thread-email row">
+                         <div class="hidden-tn hidden-xxs hidden-xs col-sm-1 sender gravatar">
+                                 {% if starting_email.sender.address %}
+-                                {% gravatar starting_email.sender.address 120 %}
++                                {% gravatar_wrapper starting_email.sender.address 120 %}
+                                         <br />
+                                 {% else %}
+                                         <div class="gravatar-placeholder">&nbsp;</div>
+diff --git a/hyperkitty/templates/hyperkitty/user_public_profile.html b/hyperkitty/templates/hyperkitty/user_public_profile.html
+index ff2558d..b50ea79 100644
+--- a/hyperkitty/templates/hyperkitty/user_public_profile.html
++++ b/hyperkitty/templates/hyperkitty/user_public_profile.html
+@@ -1,7 +1,7 @@
+ {% extends "hyperkitty/base.html" %}
+ {% load i18n %}
+ {% load hk_generic %}
+-{% load gravatar %}
++{% load gravatar_wrapper %}
+ 
+ 
+ {% block head_title %}
+@@ -54,7 +54,7 @@
+ 
+     {% if addresses %}
+     <div class="gravatar">
+-        {% gravatar addresses.0 100 %}
++        {% gravatar_wrapper addresses.0 100 %}
+     </div>
+     {% endif %}
+ 
+-- 
+2.7.4
+

@@ -1,3 +1,13 @@
+hyperkitty (1.2.2-2) unstable; urgency=medium
+
+  * d/p/0002_gravatar_disable_setting:
+    - Make it possible for system administrators to disable Gravatar.
+  * d/p/0003_footer_links.patch
+    - Allow system administrators to add links to the footer, e.g. to a privacy
+      policy or a contact page.
+
+ -- Michael Reichert <osm-ml@michreichert.de>  Sun, 02 Feb 2020 14:41:20 +0100
+
 hyperkitty (1.2.2-1) unstable; urgency=medium
 
   * New upstream release 1.2.2
